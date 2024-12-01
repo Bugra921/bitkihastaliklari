@@ -44,7 +44,7 @@ def accuracy(outputs, labels):
     _, preds = torch.max(outputs, dim=1)
     return torch.tensor(torch.sum(preds == labels).item() / len(preds))
 
-# Convolution block with BatchNormalization
+# convolution block with BatchNormalization
 def ConvBlock(in_channels, out_channels, pool=False):
     layers = [nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
              nn.BatchNorm2d(out_channels),
@@ -83,11 +83,56 @@ class ResNet9(ImageClassificationBase):
 
 # Modeli oluşturun ve yükleyin
 model = ResNet9(in_channels=3, num_classes=class_size)
-state_dict = torch.load("mymodel.pth", map_location=device)
-model.load_state_dict(state_dict)
+model.load_state_dict(torch.load("mymodel.pth", map_location=device))
 model = model.to(device)
 model.eval()
 
 # Görüntüyü işleme fonksiyonu
 def preprocess_image(img):
-    transform = transforms.Compose
+    transform = transforms.Compose([
+        transforms.ToPILImage(),
+        transforms.Resize((256, 256)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+    img = transform(img).unsqueeze(0)  # Batch boyutuna dönüştür
+    return img
+
+# Tahmin yapma fonksiyonu
+def predict_image(img):
+    img = preprocess_image(img)
+    img = img.to(device)
+    with torch.no_grad():
+        outputs = model(img)
+        st.write(f"Çıktılar: {outputs}")
+    probabilities = torch.nn.functional.softmax(outputs, dim=1)
+    confidence, predicted = torch.max(probabilities, 1)
+    st.write(f"Tahmin Edilen Sınıf: {predicted}")
+    return predicted.cpu().numpy()[0], confidence.cpu().numpy()[0]
+
+# Streamlit arayüzü
+st.title("Bitki Hastalığı Tespit Uygulaması")
+
+camera_input = st.camera_input('Kameradan resim çek')
+gallery_input = st.file_uploader('VEYA Fasulye Fotoğrafı Ekleyin', accept_multiple_files=False)
+
+if camera_input is not None:
+    img_bytes = camera_input.getvalue()
+    img = Image.open(BytesIO(img_bytes))
+    img_cv2 = np.array(img)
+
+    predicted_class, confidence = predict_image(img_cv2)
+    st.write(f"Tahmin Edilen Sınıf: {CLASS_NAMES[predicted_class]}")
+    st.write(f"İnanılırlık Yüzdesi: {confidence*100:.2f}%")
+
+elif gallery_input is not None:
+    img_bytes = gallery_input.getvalue()
+    img = Image.open(BytesIO(img_bytes))
+    img_cv2 = np.array(img)
+
+    predicted_class, confidence = predict_image(img_cv2)
+    st.write(f"Tahmin Edilen Sınıf: {CLASS_NAMES[predicted_class]}")
+    st.write(f"İnanılırlık Yüzdesi: {confidence*100:.2f}%")
+
+else:
+    st.write("Lütfen bir resim yükleyin veya kamera kullanarak bir resim çekin.")
