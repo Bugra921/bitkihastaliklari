@@ -83,7 +83,8 @@ class ResNet9(ImageClassificationBase):
 
 # Modeli oluşturun ve yükleyin
 model = ResNet9(in_channels=3, num_classes=class_size)
-model.load_state_dict(torch.load("mymodel.pth", map_location=device))
+state_dict = torch.load("mymodel.pth", map_location=device)
+model.load_state_dict(state_dict)
 model = model.to(device)
 model.eval()
 
