@@ -83,7 +83,7 @@ class ResNet9(ImageClassificationBase):
         return out
 
 # Modeli yükle
-model_path = './plant-disease-model.pth'  # Sadece ağırlıklar
+model_path = 'mymodel.pth'  # Sadece ağırlıklar
 try:
     model = ResNet9(in_channels=3, num_classes=class_size)
     model.load_state_dict(torch.load(model_path, map_location=device))
