@@ -82,14 +82,10 @@ class ResNet9(ImageClassificationBase):
         out = self.res2(out) + out
         return self.classifier(out)
 
-# Modeli oluştur ve yükle
-# Model mimarisini yeniden oluştur
-model = ResNet9(in_channels=3, num_classes=class_size)
-
-# Ağırlıkları yükle
 try:
-    state_dict = torch.load('mymodel.pth', map_location=device)  # state_dict yükle
-    model.load_state_dict(state_dict)  # Yüklenen state_dict'i modele uygula
+    model = torch.load('mymodel.pth', map_location=device)  # Tüm model yüklenir
+    model = model.to(device)
+    model.eval()
     st.success("Model başarıyla yüklendi!")
 except Exception as e:
     st.error(f"Model yüklenirken hata oluştu: {e}")
