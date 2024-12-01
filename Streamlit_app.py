@@ -112,7 +112,10 @@ def predict_image(img):
     img = img.to(device)
     with torch.no_grad():
         outputs = model(img)
+        
+    # Softmax uygulama yerine doğrudan logits çıkışını kullanıyoruz
     probabilities = torch.nn.functional.softmax(outputs, dim=1)
+    
     confidence, predicted = torch.max(probabilities, 1)
     return predicted.cpu().numpy()[0], confidence.cpu().numpy()[0]
 
