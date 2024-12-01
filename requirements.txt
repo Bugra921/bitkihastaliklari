@@ -1,0 +1,11 @@
+numpy
+Python-IO
+pillow
+keras
+keras
+opencv-python-headless
+streamlit
+tensorflow
+uvicorn
+torch
+torchvision
